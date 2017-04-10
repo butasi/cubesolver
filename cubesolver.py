@@ -249,18 +249,60 @@ class CubeSolver:
     def check_solved(self):
         return self.check_bottom() and self.check_middle() and self.check_ll()
 
+    def solve_pll(self):
+        moves = []
+        complete_edges = [i for i in range(1,5) if np.all(self.cube.cube[[i],[0]] == self.cube.cube[[i],[0],[1]])]
+        semi_complete_edges = [i for i in range(1,5) if self.cube.cube[i][0][0] == self.cube.cube[i][0][2] and self.cube.cube[i][0][0] != self.cube.cube[i][0][1]]
+
+        if len(complete_edges) == 4:
+            # U Rotations
+            if self.cube.cube[1][0][1] == self.cube.cube[2][1][1]:
+                moves.append("U'")
+            elif self.cube.cube[1][0][1] == self.cube.cube[4][1][1]:
+                moves.append("U")
+            elif self.cube.cube[1][0][1] == self.cube.cube[3][1][1]:
+                moves.append("U2")
+        elif len(complete_edges) == 1 and len(semi_complete_edges) == 3:
+            # U perms
+            if complete_edges[0] == 1:
+                moves.append("U2")
+            elif complete_edges[0] == 2:
+                moves.append("U'")
+            elif complete_edges[0] == 4:
+                moves.append("U")
+            if self.cube.cube[1][0][1] == self.cube.cube[2][0][0]:
+                # Ua perm
+                moves.extend("R U' R U R U R U' R' U' R2".split(" "))
+            else:
+                # Ub perm
+                moves.extend("R2 U R U R' U' R' U' R' U R'".split(" "))
+
+        if len(moves) > 0:
+            self.cube.execute_list(moves)
+            moves.extend(self.solve_pll())
+
+        return moves
+
+
     def solve(self):
+        self.solution = []
+        moves = []
         if not self.check_cross():
             # solve cross
+            pass
         if not self.check_bottom():
             # solve f2l
+            pass
         if not self.check_middle():
             # solve f2l
+            pass
         if not self.check_top():
             # solve oll
+            pass
         if not self.check_ll():
-            # solve pll
-        return self.check_solved()
+            moves.extend(self.solve_pll())
+            self.solution.extend(moves)
+        return self.solution
 
 
 def main(argv):
@@ -289,8 +331,12 @@ def main(argv):
     assert not solver.check_ll()
     cube.execute_string("R U' R'")
     assert solver.check_solved()
-
-    cube.show()
+    cube.execute_string("R U' R U R U R U' R' U' R2")
+    solution = solver.solve()
+    print " ".join(solution)
+    cube.execute_string("R2 U R U R' U' R' U' R' U R'")
+    solution = solver.solve()
+    print " ".join(solution)
 
 
 if __name__ == "__main__":
