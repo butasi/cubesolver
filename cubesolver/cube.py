@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 
 class Cube:
@@ -219,6 +218,27 @@ class Cube:
             self.move_y(prime)
         return True
 
+    def move_z(self, prime=False, double=False):
+        if prime:  # CCW from front
+            self.cube[3] = np.rot90(self.cube[3], -1)  # CW back
+            self.cube[1] = np.rot90(self.cube[1], 1)  # CCW front
+            temp = np.copy(np.rot90(self.cube[0], 1))
+            self.cube[0] = np.rot90(self.cube[2], 1)
+            self.cube[2] = np.rot90(self.cube[5], 1)
+            self.cube[5] = np.rot90(self.cube[4], 1)
+            self.cube[4] = temp
+        else:  # CW from front
+            self.cube[3] = np.rot90(self.cube[3], 1)  # CCW back
+            self.cube[1] = np.rot90(self.cube[1], -1)  # CW front
+            temp = np.copy(np.rot90(self.cube[0], -1))
+            self.cube[0] = np.rot90(self.cube[4], -1)
+            self.cube[4] = np.rot90(self.cube[5], -1)
+            self.cube[5] = np.rot90(self.cube[2], -1)
+            self.cube[2] = temp
+        if double:
+            self.move_z(prime)
+        return True
+
     def execute_list(self, moves=[]):
         for move in moves:
             prime = True if "'" in move else False
@@ -241,6 +261,8 @@ class Cube:
                 self.move_x(prime, double)
             elif "y" in move:
                 self.move_y(prime, double)
+            elif "z" in move:
+                self.move_z(prime, double)
             else:
                 raise Exception("Failed to attempt unrecognized move {}".format(move))
 
@@ -251,192 +273,3 @@ class Cube:
     def show(self):
         print self.cube
 
-
-class CubeSolver:
-
-    algorithms = {
-        "PLL": {
-            "Aa": "x R' U R' D2 R U' R' D2 R2",
-            "Ab": "x R2 D2 R U R' D2 R U' R",
-            "E": "x' R U' R' D R U R' D' R U R' D R U' R' D'",
-            "Ua": "R U' R U R U R U' R' U' R2",
-            "Ub": "R2 U R U R' U' R' U' R' U R'",
-            "H": "M2' U M2' U2 M2' U M2'",
-            "Z": "M2' U M2' U M' U2 M2' U2 M' U2",
-            "Ja": "",
-            "Jb": "",
-            "T": "",
-            "Rb": "",
-            "Ra": "",
-            "F": "",
-            "Ga": "",
-            "Gb": "",
-            "Gc": "",
-            "Gd": "",
-            "V": "",
-            "Na": "",
-            "Nb": "",
-            "Y": ""
-        },
-        "OLL": {
-        },
-        "F2L": {
-        }
-    }
-
-    @classmethod
-    def check_cross(cls, cube):
-        face = np.all(cube.cube[[5],[0,1,1,2],[1,0,2,1]] == cube.cube[5][1][1])
-        front_edge = cube.cube[1][2][1] == cube.cube[1][1][1]
-        right_edge = cube.cube[2][2][1] == cube.cube[2][1][1]
-        back_edge = cube.cube[3][2][1] == cube.cube[3][1][1]
-        left_edge = cube.cube[4][2][1] == cube.cube[4][1][1]
-        return face and front_edge and right_edge and back_edge and left_edge
-
-    @classmethod
-    def check_bottom(cls, cube):
-        face = np.all(cube.cube[5] == cube.cube[5][1][1])
-        front_edges = np.all(cube.cube[[1],[2]] == cube.cube[1][1][1])
-        right_edges = np.all(cube.cube[[2],[2]] == cube.cube[2][1][1])
-        back_edges = np.all(cube.cube[[3],[2]] == cube.cube[3][1][1])
-        left_edges = np.all(cube.cube[[4],[2]] == cube.cube[4][1][1])
-        return face and front_edges and right_edges and back_edges and left_edges
-
-    @classmethod
-    def check_middle(cls, cube):
-        front_middle = np.all(cube.cube[[1],[2],[0,2]] == cube.cube[1][2][1])
-        right_middle = np.all(cube.cube[[2],[2],[0,2]] == cube.cube[2][2][1])
-        back_middle = np.all(cube.cube[[3],[2],[0,2]] == cube.cube[3][2][1])
-        left_middle = np.all(cube.cube[[4],[2],[0,2]] == cube.cube[4][2][1])
-        return front_middle and right_middle and back_middle and left_middle
-
-    @classmethod
-    def check_top(cls, cube):
-        face = np.all(cube.cube[0] == cube.cube[0][1][1])
-        return face
-
-    @classmethod
-    def check_ll(cls, cube):
-        front_edges = np.all(cube.cube[[1],[0]] == cube.cube[1][1][1])
-        right_edges = np.all(cube.cube[[2],[0]] == cube.cube[2][1][1])
-        back_edges = np.all(cube.cube[[3],[0]] == cube.cube[3][1][1])
-        left_edges = np.all(cube.cube[[4],[0]] == cube.cube[4][1][1])
-        return cls.check_top(cube) and front_edges and right_edges and back_edges and left_edges
-
-    @classmethod
-    def check_solved(cls, cube):
-        return cls.check_bottom(cube) and cls.check_middle(cube) and cls.check_ll(cube)
-
-    @classmethod
-    def solve_pll(cls, cube):
-        moves = []
-        complete_edges = [i for i in range(1,5) if np.all(cube.cube[[i],[0]] == cube.cube[[i],[0],[1]])]
-        semi_complete_edges = [i for i in range(1,5) if cube.cube[i][0][0] == cube.cube[i][0][2] and cube.cube[i][0][0] != cube.cube[i][0][1]]
-
-        if len(complete_edges) == 4:
-            # U rotations
-            if cube.cube[1][0][1] == cube.cube[2][1][1]:
-                moves.append("U'")
-            elif cube.cube[1][0][1] == cube.cube[4][1][1]:
-                moves.append("U")
-            elif cube.cube[1][0][1] == cube.cube[3][1][1]:
-                moves.append("U2")
-        elif len(complete_edges) == 1 and len(semi_complete_edges) == 3:
-            # U perms pre-rotations
-            if complete_edges[0] == 1:
-                moves.append("U2")
-            elif complete_edges[0] == 2:
-                moves.append("U'")
-            elif complete_edges[0] == 4:
-                moves.append("U")
-            else:
-                if cube.cube[1][0][1] == cube.cube[2][0][0]:
-                    # Ua perm
-                    moves.extend(cls.algorithms["PLL"]["Ua"].split(" "))
-                else:
-                    # Ub perm
-                    moves.extend(cls.algorithms["PLL"]["Ub"].split(" "))
-        elif len(semi_complete_edges) == 4:
-            if cube.cube[1][0][1] == cube.cube[3][0][0]:
-                # H perm
-                moves.extend(cls.algorithms["PLL"]["H"].split(" "))
-            else:
-                # Z perm
-                if cube.cube[1][0][1] == cube.cube[4][0][0]:
-                    moves.append("U")
-                moves.extend(cls.algorithms["PLL"]["Z"].split(" "))
-
-        if len(moves) > 0:
-            cube.execute_list(moves)
-            moves.extend(cls.solve_pll(cube))
-
-        return moves
-
-    @classmethod
-    def solve(cls, cube):
-        solution = []
-        moves = []
-        if not cls.check_cross(cube):
-            # solve cross
-            pass
-        if not cls.check_bottom(cube):
-            # solve f2l
-            pass
-        if not cls.check_middle(cube):
-            # solve f2l
-            pass
-        if not cls.check_top(cube):
-            # solve oll
-            pass
-        if not cls.check_ll(cube):
-            moves.extend(cls.solve_pll(cube))
-            solution.extend(moves)
-        return solution
-
-
-def main(argv):
-    #test_cube = Cube("test")
-    #print test_cube.show()
-    #test_cube.execute_string("x")
-    #print test_cube.show()
-    #test_cube.execute_string("x'")
-    #print test_cube.show()
-    solved_cube = Cube()
-    cube = Cube()
-    assert np.array_equal(cube.cube, solved_cube.cube)
-    cube.execute_string("R U R' U' R U R' U' R U R' U' R U R' U' R U R' U' R U R' U'")
-    assert np.array_equal(cube.cube, solved_cube.cube)
-    cube.execute_string("M' U M' U M' U M' U M' U M' U M' U M' U")
-    assert np.array_equal(cube.cube, solved_cube.cube)
-    cube.execute_string("F R U R' F R U R' F R U R' F R U R' F R U R' F R U R' F R U R' F R U R' F R U R' F R U R'")
-    assert np.array_equal(cube.cube, solved_cube.cube)
-    assert CubeSolver.check_solved(cube)
-    cube.execute_string("U")
-    assert CubeSolver.check_cross(cube)
-    assert CubeSolver.check_bottom(cube)
-    assert CubeSolver.check_middle(cube)
-    assert CubeSolver.check_top(cube)
-    assert not CubeSolver.check_ll(cube)
-    cube.execute_string("U' R U R'")
-    assert CubeSolver.check_cross(cube)
-    assert not CubeSolver.check_bottom(cube)
-    assert not CubeSolver.check_middle(cube)
-    assert not CubeSolver.check_top(cube)
-    assert not CubeSolver.check_ll(cube)
-    cube.execute_string("R U' R'")
-    assert CubeSolver.check_solved(cube)
-    cube.execute_string("R U' R U R U R U' R' U' R2 U'")
-    solution = CubeSolver.solve(cube)
-    print " ".join(solution)
-    cube.execute_string("R2 U R U R' U' R' U' R' U R' U")
-    solution = CubeSolver.solve(cube)
-    print " ".join(solution)
-    cube.execute_string("M2' U M2' U2 M2' U M2'")
-    solution = CubeSolver.solve(cube)
-    print " ".join(solution)
-    cube.execute_string("M2' U M2' U M' U2 M2' U2 M' U2")
-    solution = CubeSolver.solve(cube)
-    print " ".join(solution)
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
