@@ -176,6 +176,70 @@ class Cube:
             self.move_M(prime)
         return True
 
+    def move_E(self, prime=False, double=False):
+        if prime:
+            temp = self.cube[[1],[1]]
+            self.cube[[1],[1]] = self.cube[[2],[1]]
+            self.cube[[2],[1]] = self.cube[[3],[1]]
+            self.cube[[3],[1]] = self.cube[[4],[1]]
+            self.cube[[4],[1]] = temp
+        else:
+            temp = self.cube[[1],[1]]
+            self.cube[[1],[1]] = self.cube[[4],[1]]
+            self.cube[[4],[1]] = self.cube[[3],[1]]
+            self.cube[[3],[1]] = self.cube[[2],[1]]
+            self.cube[[2],[1]] = temp
+        if double:
+            self.move_E(prime)
+        return True
+
+    def move_S(self, prime=False, double=False):
+        if prime:
+            temp = self.cube[[0],[1,1,1],[2,1,0]]
+            self.cube[[0],[1]] = self.cube[[2],[0,1,2],[1,1,1]]
+            self.cube[[2],[0,1,2],[1,1,1]] = self.cube[[5],[1,1,1],[2,1,0]]
+            self.cube[[5],[1,1,1],[0,1,2]] = self.cube[[4],[0,1,2],[1,1,1]]
+            self.cube[[4],[0,1,2],[1,1,1]] = temp
+        else:
+            temp = self.cube[[0],[1,1,1],[0,1,2]]
+            self.cube[[0],[1]] = self.cube[[4],[2,1,0],[1,1,1]]
+            self.cube[[4],[0,1,2],[1,1,1]] = self.cube[[5],[1,1,1],[0,1,2]]
+            self.cube[[5],[1,1,1],[0,1,2]] = self.cube[[2],[2,1,0],[1,1,1]]
+            self.cube[[2],[0,1,2],[1,1,1]] = temp
+        if double:
+            self.move_S(prime)
+        return True
+
+    def move_u(self, prime=False, double=False):
+        self.move_U(prime, double)
+        self.move_E(not prime, double)
+        return True
+
+    def move_r(self, prime=False, double=False):
+        self.move_R(prime, double)
+        self.move_M(not prime, double)
+        return True
+
+    def move_l(self, prime=False, double=False):
+        self.move_L(prime, double)
+        self.move_M(prime, double)
+        return True
+
+    def move_d(self, prime=False, double=False):
+        self.move_D(prime, double)
+        self.move_E(prime, double)
+        return True
+
+    def move_f(self, prime=False, double=False):
+        self.move_F(prime, double)
+        self.move_S(prime, double)
+        return True
+
+    def move_b(self, prime=False, double=False):
+        self.move_B(prime, double)
+        self.move_S(not prime, double)
+        return True
+
     def move_x(self, prime=False, double=False):
         if prime:  # CCW from right
             self.cube[2] = np.rot90(self.cube[2], 1)  # CCW right
@@ -257,6 +321,18 @@ class Cube:
                 self.move_B(prime, double)
             elif "M" in move:
                 self.move_M(prime, double)
+            elif "r" in move:
+                self.move_r(prime, double)
+            elif "l" in move:
+                self.move_l(prime, double)
+            elif "u" in move:
+                self.move_u(prime, double)
+            elif "d" in move:
+                self.move_d(prime, double)
+            elif "f" in move:
+                self.move_f(prime, double)
+            elif "b" in move:
+                self.move_b(prime, double)
             elif "x" in move:
                 self.move_x(prime, double)
             elif "y" in move:
