@@ -2,6 +2,12 @@ import numpy as np
 
 class CubeSolver:
 
+    recognition = {
+        "OLL": {
+
+        }
+    }
+
     algorithms = {
         "PLL": {
             "Aa": "x R' U R' D2 R U' R' D2 R2",
@@ -27,8 +33,63 @@ class CubeSolver:
             "Y": "F R U' R' U' R U R' F' R U R' U' R' F R F'"
         },
         "OLL": {
-        },
-        "F2L": {
+            28: "",
+            57: "",
+            20: "",
+            23: "",
+            24: "",
+            25: "",
+            27: "",
+            26: "",
+            22: "",
+            21: "",
+            3: "",
+            4: "",
+            17: "",
+            19: "",
+            18: "",
+            2: "",
+            1: "",
+            33: "",
+            45: "",
+            44: "",
+            43: "",
+            32: "",
+            31: "",
+            38: "",
+            36: "",
+            54: "",
+            53: "",
+            50: "",
+            49: "",
+            48: "",
+            47: "",
+            39: "",
+            40: "",
+            34: "",
+            46: "",
+            5: "",
+            6: "",
+            7: "",
+            12: "",
+            8: "",
+            11: "",
+            37: "",
+            35: "",
+            10: "",
+            9: "",
+            51: "",
+            52: "",
+            56: "",
+            55: "",
+            13: "",
+            16: "",
+            14: "",
+            15: "",
+            41: "",
+            30: "",
+            42: "",
+            29: ""
         }
     }
 
@@ -86,6 +147,26 @@ class CubeSolver:
             return "U"
         else:
             return None
+
+    @classmethod
+    def solve_oll(cls, cube):
+        moves = []
+        top_color = cube.cube[0][1][1]
+        correct_edges = []
+        correct_corners = []
+        binary_top_face = []
+        for k, v in enumerate(cube.cube[0].flatten()):
+            if v == top_color:
+                binary_top_face.append(True)
+                if k in [0,2,6,8]:
+                    correct_corners.append(k)
+                elif k in [1,3,5,7]:
+                    correct_edges.append(k)
+            else:
+                binary_top_face.append(False)
+        outer_last_layer = cube[[1,2,3,4],[0]].flatten()
+        binary_outer_last_layer = map(lambda x: x == top_color, outer_last_layer)
+
 
     @classmethod
     def solve_pll(cls, cube):
