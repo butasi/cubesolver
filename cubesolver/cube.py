@@ -1,6 +1,6 @@
 import numpy as np
 
-class Cube:
+class Cube(object):
     '''
     Numpy Array Faces
     0 = U

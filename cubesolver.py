@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 
-class Cube:
+class Cube(object):
     '''
     Numpy Array Faces
     0 = U
@@ -252,7 +252,7 @@ class Cube:
         print self.cube
 
 
-class CubeSolver:
+class CubeSolver(object):
 
     algorithms = {
         "PLL": {
